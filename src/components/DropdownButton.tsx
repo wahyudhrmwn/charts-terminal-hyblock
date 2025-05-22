@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 interface DropdownButtonProps {
   onCoinChange: (coin: string) => void;
@@ -12,66 +12,60 @@ const DropdownButton: React.FC<DropdownButtonProps> = ({
   initialCoin = "BTC" 
 }) => {
   const [selectedCoin, setSelectedCoin] = useState(initialCoin);
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const handleCoinSelect = (coin: string) => {
     setSelectedCoin(coin);
     onCoinChange(coin);
+    setIsOpen(false);
   };
 
+  // Tutup dropdown saat klik di luar
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const coins = [
+    { id: "BTC", name: "BTC" },
+    { id: "ETH", name: "ETH" },
+    { id: "SOL", name: "SOL" },
+    { id: "BNB", name: "BNB" },
+    { id: "XRP", name: "XRP" },
+  ];
+
   return (
-    <div className="dropdown">
-      <div 
-        tabIndex={0} 
-        role="button" 
+    <div className="relative" ref={dropdownRef}>
+      <button 
+        onClick={() => setIsOpen(!isOpen)}
         className="btn bg-[#F0B90B] hover:bg-[#F8D12F] text-black border-none font-medium"
       >
         {selectedCoin}
-      </div>
-      <ul
-        tabIndex={0}
-        className="dropdown-content menu bg-[#1E2026] text-white rounded-md z-[100] w-52 p-2 shadow-lg border border-[#2B3139]"
-      >
-        <li>
-          <a 
-            className={`hover:bg-[#2B3139] ${selectedCoin === "BTC" ? "bg-[#2B3139] text-[#F0B90B]" : ""}`}
-            onClick={() => handleCoinSelect("BTC")}
-          >
-            BTC
-          </a>
-        </li>
-        <li>
-          <a 
-            className={`hover:bg-[#2B3139] ${selectedCoin === "ETH" ? "bg-[#2B3139] text-[#F0B90B]" : ""}`}
-            onClick={() => handleCoinSelect("ETH")}
-          >
-            ETH
-          </a>
-        </li>
-        <li>
-          <a 
-            className={`hover:bg-[#2B3139] ${selectedCoin === "SOL" ? "bg-[#2B3139] text-[#F0B90B]" : ""}`}
-            onClick={() => handleCoinSelect("SOL")}
-          >
-            SOL
-          </a>
-        </li>
-        <li>
-          <a 
-            className={`hover:bg-[#2B3139] ${selectedCoin === "BNB" ? "bg-[#2B3139] text-[#F0B90B]" : ""}`}
-            onClick={() => handleCoinSelect("BNB")}
-          >
-            BNB
-          </a>
-        </li>
-        <li>
-          <a 
-            className={`hover:bg-[#2B3139] ${selectedCoin === "XRP" ? "bg-[#2B3139] text-[#F0B90B]" : ""}`}
-            onClick={() => handleCoinSelect("XRP")}
-          >
-            XRP
-          </a>
-        </li>
-      </ul>
+      </button>
+      
+      {isOpen && (
+        <ul className="absolute mt-1 bg-[#1E2026] text-white rounded-md z-[100] w-52 p-2 shadow-lg border border-[#2B3139]">
+          {coins.map((coin) => (
+            <li key={coin.id}>
+              <button 
+                className={`w-full text-left px-4 py-2 hover:bg-[#2B3139] rounded ${selectedCoin === coin.id ? "bg-[#2B3139] text-[#F0B90B]" : ""}`}
+                onClick={() => handleCoinSelect(coin.id)}
+              >
+                {coin.name}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 };
