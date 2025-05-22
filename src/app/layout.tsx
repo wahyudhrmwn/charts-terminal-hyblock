@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "HyBlock - Solusi Digital Terbaik",
-  description: "Layanan pengembangan website, aplikasi mobile, dan analisis data untuk bisnis Anda",
+  title: "Hyblock Terminal",
+  description: "Hyblock Terminal",
 };
 
 export default function RootLayout({
