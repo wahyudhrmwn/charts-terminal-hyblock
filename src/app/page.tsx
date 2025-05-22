@@ -9,7 +9,6 @@ export default function Home() {
   const [selectedCoin, setSelectedCoin] = useState("BTC");
 
   const handleCoinChange = (coin: string) => {
-    console.log(`Coin berubah ke: ${coin}`);
     setSelectedCoin(coin);
   };
 

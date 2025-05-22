@@ -42,10 +42,6 @@ axiosInstance.interceptors.request.use(
 
     config.headers["Accept"] = "application/json";
 
-    // Debug: Log headers
-    console.log("Request headers:", config.headers);
-    console.log("Request URL:", config.url);
-
     return config;
   },
   (error) => {
@@ -56,8 +52,6 @@ axiosInstance.interceptors.request.use(
 // Interceptor untuk menangani response
 axiosInstance.interceptors.response.use(
   (response) => {
-    // Debug: Log response
-    console.log("Response status:", response.status);
     return response;
   },
   (error) => {

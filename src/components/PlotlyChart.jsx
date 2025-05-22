@@ -26,16 +26,10 @@ const PlotlyChart = ({ coin = "BTC", timeframe = "1d" }) => {
   // Fungsi untuk memproses data price
   const processPriceData = useCallback((rawData) => {
     if (!rawData.data || !Array.isArray(rawData.data) || rawData.data.length === 0) {
-      console.log('rawData nya', rawData);
-      console.log('!rawData', !rawData);
-      console.log('!Array.isArray(rawData)', !Array.isArray(rawData));
-      console.log('!rawData.length', rawData.length === 0);
-      console.log("Tidak ada data yang valid untuk diproses");
       return [];
     }
 
     try {
-      console.log("Raw data sample:", rawData.data[0]);
       
       // Memastikan data dalam format yang benar
       const validatedData = rawData.data.filter(item => 
@@ -57,14 +51,11 @@ const PlotlyChart = ({ coin = "BTC", timeframe = "1d" }) => {
         // Jika timestamp dalam detik (kurang dari 13 digit), kalikan dengan 1000 untuk menjadi milidetik
         const openDateStr = String(newItem.openDate);
         if (openDateStr.length <= 10) {
-          console.log(`Mengkonversi format openDate dari detik ke milidetik: ${newItem.openDate} -> ${newItem.openDate * 1000}`);
           newItem.openDate = newItem.openDate * 1000;
         }
         
         return newItem;
       });
-      
-      console.log("Validated data sample setelah konversi:", processedData[0]);
       
       // Urutkan data
       return [...processedData].sort((a, b) => a.openDate - b.openDate);
@@ -77,12 +68,10 @@ const PlotlyChart = ({ coin = "BTC", timeframe = "1d" }) => {
   // Fungsi untuk memproses data OI Delta
   const processOIDeltaData = useCallback((rawData) => {
     if (!rawData.data || !Array.isArray(rawData.data) || rawData.data.length === 0) {
-      console.log("Tidak ada data OI Delta yang valid untuk diproses");
       return [];
     }
 
     try {
-      console.log("Raw OI Delta data sample:", rawData.data[0]);
       
       // Memastikan data dalam format yang benar
       const validatedData = rawData.data.filter(item => 
@@ -103,14 +92,12 @@ const PlotlyChart = ({ coin = "BTC", timeframe = "1d" }) => {
         // Periksa format timestamp (dalam detik atau milidetik)
         const openDateStr = String(newItem.openDate);
         if (openDateStr.length <= 10) {
-          console.log(`Mengkonversi format openDate OI Delta dari detik ke milidetik: ${newItem.openDate} -> ${newItem.openDate * 1000}`);
           newItem.openDate = newItem.openDate * 1000;
         }
         
         return newItem;
       });
       
-      console.log("Validated OI Delta data sample setelah konversi:", processedData[0]);
       
       // Urutkan data
       return [...processedData].sort((a, b) => a.openDate - b.openDate);
@@ -123,12 +110,10 @@ const PlotlyChart = ({ coin = "BTC", timeframe = "1d" }) => {
   // Fungsi untuk memproses data Volume Delta
   const processVolDeltaData = useCallback((rawData) => {
     if (!rawData.data || !Array.isArray(rawData.data) || rawData.data.length === 0) {
-      console.log("Tidak ada data Volume Delta yang valid untuk diproses");
       return [];
     }
 
     try {
-      console.log("Raw Volume Delta data sample:", rawData.data[0]);
       
       // Memastikan data dalam format yang benar
       const validatedData = rawData.data.filter(item => 
@@ -149,14 +134,12 @@ const PlotlyChart = ({ coin = "BTC", timeframe = "1d" }) => {
         // Periksa format timestamp (dalam detik atau milidetik)
         const openDateStr = String(newItem.openDate);
         if (openDateStr.length <= 10) {
-          console.log(`Mengkonversi format openDate Volume Delta dari detik ke milidetik: ${newItem.openDate} -> ${newItem.openDate * 1000}`);
           newItem.openDate = newItem.openDate * 1000;
         }
         
         return newItem;
       });
       
-      console.log("Validated Volume Delta data sample setelah konversi:", processedData[0]);
       
       // Urutkan data
       return [...processedData].sort((a, b) => a.openDate - b.openDate);
@@ -169,7 +152,6 @@ const PlotlyChart = ({ coin = "BTC", timeframe = "1d" }) => {
   // Fungsi untuk mengambil data dari API
   useEffect(() => {
     if (tokenLoading) {
-      console.log("Menunggu token...");
       return;
     }
     
@@ -198,8 +180,6 @@ const PlotlyChart = ({ coin = "BTC", timeframe = "1d" }) => {
           endTime: endTime
         };
         
-        console.log(`Memuat data untuk coin: ${coin} dengan timeframe: ${timeframe}`);
-        
         // Buat semua permintaan API secara paralel
         const [priceResponse, oiDeltaResponse, volDeltaResponse] = await Promise.all([
           getBidAsk(commonParams),
@@ -207,16 +187,11 @@ const PlotlyChart = ({ coin = "BTC", timeframe = "1d" }) => {
           getVolDelta(commonParams)
         ]);
         
-        console.log("Price API Response:", priceResponse);
-        console.log("OI Delta API Response:", oiDeltaResponse);
-        console.log("Volume Delta API Response:", volDeltaResponse);
-        
         // Memeriksa error untuk setiap response
         if (priceResponse.error || oiDeltaResponse.error || volDeltaResponse.error) {
           // Jika ada error 401/403, coba refresh token
           if ([priceResponse.status, oiDeltaResponse.status, volDeltaResponse.status].includes(401) || 
               [priceResponse.status, oiDeltaResponse.status, volDeltaResponse.status].includes(403)) {
-            console.log('Token tidak valid, mencoba refresh token...');
             await refreshToken();
             setError("Sesi autentikasi diperbarui. Mohon tunggu...");
           } else {
@@ -235,17 +210,14 @@ const PlotlyChart = ({ coin = "BTC", timeframe = "1d" }) => {
         
         // Update state dengan data yang berhasil diproses
         if (processedPriceData.length > 0) {
-          console.log(`Berhasil memproses ${processedPriceData.length} data price`);
           setPriceData(processedPriceData);
         }
         
         if (processedOIDeltaData.length > 0) {
-          console.log(`Berhasil memproses ${processedOIDeltaData.length} data OI Delta`);
           setOiDeltaData(processedOIDeltaData);
         }
         
         if (processedVolDeltaData.length > 0) {
-          console.log(`Berhasil memproses ${processedVolDeltaData.length} data Volume Delta`);
           setVolDeltaData(processedVolDeltaData);
         }
         

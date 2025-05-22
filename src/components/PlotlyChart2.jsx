@@ -26,13 +26,10 @@ const PlotlyChart2 = ({ coin = "BTC", timeframe = "1d" }) => {
   // Fungsi untuk memproses data Whale Retail Delta
   const processWhaleRetailData = useCallback((rawData) => {
     if (!rawData.data || !Array.isArray(rawData.data) || rawData.data.length === 0) {
-      console.log("Tidak ada data Whale Retail Delta yang valid untuk diproses");
       return [];
     }
 
-    try {
-      console.log("Raw Whale Retail data sample:", rawData.data[0]);
-      
+    try {      
       // Memastikan data dalam format yang benar
       const validatedData = rawData.data.filter(item => 
         item && typeof item === 'object' && 
@@ -52,14 +49,11 @@ const PlotlyChart2 = ({ coin = "BTC", timeframe = "1d" }) => {
         // Periksa format timestamp (dalam detik atau milidetik)
         const openDateStr = String(newItem.openDate);
         if (openDateStr.length <= 10) {
-          console.log(`Mengkonversi format openDate dari detik ke milidetik: ${newItem.openDate} -> ${newItem.openDate * 1000}`);
           newItem.openDate = newItem.openDate * 1000;
         }
         
         return newItem;
       });
-      
-      console.log("Validated Whale Retail data sample setelah konversi:", processedData[0]);
       
       // Urutkan data
       return [...processedData].sort((a, b) => a.openDate - b.openDate);
@@ -72,12 +66,10 @@ const PlotlyChart2 = ({ coin = "BTC", timeframe = "1d" }) => {
   // Fungsi untuk memproses data True Retail Long Short
   const processTrueRetailData = useCallback((rawData) => {
     if (!rawData.data || !Array.isArray(rawData.data) || rawData.data.length === 0) {
-      console.log("Tidak ada data True Retail Long Short yang valid untuk diproses");
       return [];
     }
 
     try {
-      console.log("Raw True Retail data sample:", rawData.data[0]);
       
       // Memastikan data dalam format yang benar
       const validatedData = rawData.data.filter(item => 
@@ -98,14 +90,12 @@ const PlotlyChart2 = ({ coin = "BTC", timeframe = "1d" }) => {
         // Periksa format timestamp (dalam detik atau milidetik)
         const openDateStr = String(newItem.openDate);
         if (openDateStr.length <= 10) {
-          console.log(`Mengkonversi format openDate dari detik ke milidetik: ${newItem.openDate} -> ${newItem.openDate * 1000}`);
           newItem.openDate = newItem.openDate * 1000;
         }
         
         return newItem;
       });
       
-      console.log("Validated True Retail data sample setelah konversi:", processedData[0]);
       
       // Urutkan data
       return [...processedData].sort((a, b) => a.openDate - b.openDate);
@@ -118,13 +108,10 @@ const PlotlyChart2 = ({ coin = "BTC", timeframe = "1d" }) => {
   // Fungsi untuk memproses data Top Trader Long Short
   const processTopTraderData = useCallback((rawData) => {
     if (!rawData.data || !Array.isArray(rawData.data) || rawData.data.length === 0) {
-      console.log("Tidak ada data Top Trader Long Short yang valid untuk diproses");
       return [];
     }
 
     try {
-      console.log("Raw Top Trader data sample:", rawData.data[0]);
-      
       // Memastikan data dalam format yang benar
       const validatedData = rawData.data.filter(item => 
         item && typeof item === 'object' && 
@@ -144,14 +131,11 @@ const PlotlyChart2 = ({ coin = "BTC", timeframe = "1d" }) => {
         // Periksa format timestamp (dalam detik atau milidetik)
         const openDateStr = String(newItem.openDate);
         if (openDateStr.length <= 10) {
-          console.log(`Mengkonversi format openDate dari detik ke milidetik: ${newItem.openDate} -> ${newItem.openDate * 1000}`);
           newItem.openDate = newItem.openDate * 1000;
         }
         
         return newItem;
       });
-      
-      console.log("Validated Top Trader data sample setelah konversi:", processedData[0]);
       
       // Urutkan data
       return [...processedData].sort((a, b) => a.openDate - b.openDate);
@@ -164,7 +148,6 @@ const PlotlyChart2 = ({ coin = "BTC", timeframe = "1d" }) => {
   // Fungsi untuk mengambil data dari API
   useEffect(() => {
     if (tokenLoading) {
-      console.log("Menunggu token...");
       return;
     }
     
@@ -194,7 +177,6 @@ const PlotlyChart2 = ({ coin = "BTC", timeframe = "1d" }) => {
           endTime: endTime,
         };
         
-        console.log(`Memuat data untuk coin: ${coin} dengan timeframe: ${timeframe}`);
         
         // Buat semua permintaan API secara paralel
         const [whaleRetailResponse, trueRetailResponse, topTraderResponse] = await Promise.all([
@@ -203,16 +185,11 @@ const PlotlyChart2 = ({ coin = "BTC", timeframe = "1d" }) => {
           getTopTraderLongShort(commonParams)
         ]);
         
-        console.log("Whale Retail Delta API Response:", whaleRetailResponse);
-        console.log("True Retail Long Short API Response:", trueRetailResponse);
-        console.log("Top Trader Long Short API Response:", topTraderResponse);
-        
         // Memeriksa error untuk setiap response
         if (whaleRetailResponse.error || trueRetailResponse.error || topTraderResponse.error) {
           // Jika ada error 401/403, coba refresh token
           if ([whaleRetailResponse.status, trueRetailResponse.status, topTraderResponse.status].includes(401) || 
               [whaleRetailResponse.status, trueRetailResponse.status, topTraderResponse.status].includes(403)) {
-            console.log('Token tidak valid, mencoba refresh token...');
             await refreshToken();
             setError("Sesi autentikasi diperbarui. Mohon tunggu...");
           } else {
@@ -231,17 +208,14 @@ const PlotlyChart2 = ({ coin = "BTC", timeframe = "1d" }) => {
         
         // Update state dengan data yang berhasil diproses
         if (processedWhaleRetailData.length > 0) {
-          console.log(`Berhasil memproses ${processedWhaleRetailData.length} data Whale Retail Delta`);
           setWhaleRetailData(processedWhaleRetailData);
         }
         
         if (processedTrueRetailData.length > 0) {
-          console.log(`Berhasil memproses ${processedTrueRetailData.length} data True Retail Long Short`);
           setTrueRetailData(processedTrueRetailData);
         }
         
         if (processedTopTraderData.length > 0) {
-          console.log(`Berhasil memproses ${processedTopTraderData.length} data Top Trader Long Short`);
           setTopTraderData(processedTopTraderData);
         }
         

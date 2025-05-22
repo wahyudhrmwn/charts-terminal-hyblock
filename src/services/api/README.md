@@ -34,8 +34,6 @@ const fetchData = async () => {
     console.error('Error:', response.error);
     return;
   }
-  
-  console.log('Data:', response.data);
 };
 ```
 
@@ -55,8 +53,6 @@ const fetchWithParams = async () => {
     console.error('Error:', response.error);
     return;
   }
-  
-  console.log('Data:', response.data);
 };
 ```
 
@@ -84,8 +80,6 @@ const createData = async (data: RequestData) => {
     console.error('Error:', response.error);
     return;
   }
-  
-  console.log('Created:', response.data);
 };
 ```
 
@@ -102,8 +96,6 @@ const fetchUser = async (id: number) => {
     console.error('Error:', response.error);
     return;
   }
-  
-  console.log('User:', response.data);
 };
 
 // Membuat user baru
@@ -120,8 +112,6 @@ const saveUser = async () => {
     console.error('Error:', response.error);
     return;
   }
-  
-  console.log('Created user:', response.data);
 };
 ```
 

@@ -39,8 +39,6 @@ export const TokenProvider: React.FC<{ children: React.ReactNode }> = ({
       const clientSecret =
         "1hh2r09d2a9qbsijq16af452l2ge2mlaefqks54m013hmk30er0e";
 
-      console.log("Mengambil token baru dengan credentials:", { clientId });
-
       const newToken = await getValidToken({
         client_id: clientId,
         client_secret: clientSecret,
@@ -48,7 +46,6 @@ export const TokenProvider: React.FC<{ children: React.ReactNode }> = ({
 
       if (newToken) {
         setToken(newToken);
-        console.log("Token berhasil diperbarui");
       } else {
         throw new Error("Gagal mendapatkan token");
       }
@@ -68,7 +65,6 @@ export const TokenProvider: React.FC<{ children: React.ReactNode }> = ({
       const storedToken = getStoredToken();
       setToken(storedToken);
       setIsLoading(false);
-      console.log("Menggunakan token yang sudah ada di localStorage");
     } else {
       // Jika tidak ada token atau sudah expired, minta token baru
       fetchToken();

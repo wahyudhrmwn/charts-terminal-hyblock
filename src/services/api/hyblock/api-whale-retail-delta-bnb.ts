@@ -99,13 +99,8 @@ export const getWhaleRetailDelta = async (
       'Content-Type': 'application/json'
     };
     
-    console.log('Request to:', url);
-    console.log('With headers:', headers);
-    
     // Gunakan axios langsung untuk request data
     const response = await axios.get(url, { headers });
-    
-    console.log('Response:', response.data);
     
     return {
       data: response.data,
