@@ -47,7 +47,7 @@ const DropdownButton: React.FC<DropdownButtonProps> = ({
     <div className="relative" ref={dropdownRef}>
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        className="btn bg-[#F0B90B] hover:bg-[#F8D12F] text-black border-none font-medium"
+        className="px-4 py-2 rounded-md bg-[#F0B90B] hover:bg-[#F8D12F] text-black font-medium transition-colors duration-200 min-w-[80px] h-[40px] flex items-center justify-center"
       >
         {selectedCoin}
       </button>
@@ -55,9 +55,9 @@ const DropdownButton: React.FC<DropdownButtonProps> = ({
       {isOpen && (
         <ul className="absolute mt-1 bg-[#1E2026] text-white rounded-md z-[100] w-52 p-2 shadow-lg border border-[#2B3139]">
           {coins.map((coin) => (
-            <li key={coin.id}>
+            <li key={coin.id} className="my-1">
               <button 
-                className={`w-full text-left px-4 py-2 hover:bg-[#2B3139] rounded ${selectedCoin === coin.id ? "bg-[#2B3139] text-[#F0B90B]" : ""}`}
+                className={`w-full text-left px-4 py-2 hover:bg-[#2B3139] rounded-md transition-colors ${selectedCoin === coin.id ? "bg-[#2B3139] text-[#F0B90B]" : ""}`}
                 onClick={() => handleCoinSelect(coin.id)}
               >
                 {coin.name}
