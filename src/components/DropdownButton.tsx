@@ -19,7 +19,7 @@ const DropdownButton: React.FC<DropdownButtonProps> = ({
   };
 
   return (
-    <div className="dropdown dropdown-hover">
+    <div className="dropdown">
       <div 
         tabIndex={0} 
         role="button" 
