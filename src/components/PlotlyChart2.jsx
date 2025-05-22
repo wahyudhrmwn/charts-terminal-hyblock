@@ -1,7 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import dynamic from "next/dynamic";
+import { getWhaleRetailDelta, getTrueRetailLongShort, getTopTraderLongShort } from "../services/api/hyblock";
+import { useToken } from "@/context/TokenContext";
 
 // Menggunakan dynamic import untuk plotly karena isu SSR
 const Plot = dynamic(() => import("react-plotly.js"), {
@@ -13,36 +15,279 @@ const Plot = dynamic(() => import("react-plotly.js"), {
   ),
 });
 
-const PlotlyChart2 = () => {
-  // Dummy data untuk contoh
-  const [data] = useState({
-    time: Array.from({ length: 24 }, (_, i) =>
-      new Date(2023, 0, 1, i).toISOString()
-    ),
-    whaleRetailDelta: Array.from(
-      { length: 24 },
-      () => Math.random() * 800 - 400
-    ),
-    trueRetailLongPct: Array.from(
-      { length: 24 },
-      () => Math.random() * 40 + 30
-    ),
-    trueRetailShortPct: Array.from(
-      { length: 24 },
-      () => Math.random() * 40 + 30
-    ),
-    topTraderLongPct: Array.from({ length: 24 }, () => Math.random() * 30 + 50),
-    topTraderShortPct: Array.from(
-      { length: 24 },
-      () => Math.random() * 30 + 50
-    ),
-  });
+const PlotlyChart2 = ({ coin = "BTC", timeframe = "1d" }) => {
+  const [whaleRetailData, setWhaleRetailData] = useState([]);
+  const [trueRetailData, setTrueRetailData] = useState([]);
+  const [topTraderData, setTopTraderData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const { token, isLoading: tokenLoading, error: tokenError, refreshToken } = useToken();
 
+  // Fungsi untuk memproses data Whale Retail Delta
+  const processWhaleRetailData = useCallback((rawData) => {
+    if (!rawData.data || !Array.isArray(rawData.data) || rawData.data.length === 0) {
+      console.log("Tidak ada data Whale Retail Delta yang valid untuk diproses");
+      return [];
+    }
+
+    try {
+      console.log("Raw Whale Retail data sample:", rawData.data[0]);
+      
+      // Memastikan data dalam format yang benar
+      const validatedData = rawData.data.filter(item => 
+        item && typeof item === 'object' && 
+        'openDate' in item && 'whaleRetailDelta' in item
+      );
+      
+      if (validatedData.length === 0) {
+        console.error("Tidak ada data Whale Retail Delta valid setelah validasi");
+        return [];
+      }
+      
+      // Memperbaiki format openDate jika diperlukan
+      const processedData = validatedData.map(item => {
+        // Salin data item
+        const newItem = { ...item };
+        
+        // Periksa format timestamp (dalam detik atau milidetik)
+        const openDateStr = String(newItem.openDate);
+        if (openDateStr.length <= 10) {
+          console.log(`Mengkonversi format openDate dari detik ke milidetik: ${newItem.openDate} -> ${newItem.openDate * 1000}`);
+          newItem.openDate = newItem.openDate * 1000;
+        }
+        
+        return newItem;
+      });
+      
+      console.log("Validated Whale Retail data sample setelah konversi:", processedData[0]);
+      
+      // Urutkan data
+      return [...processedData].sort((a, b) => a.openDate - b.openDate);
+    } catch (err) {
+      console.error("Error memproses data Whale Retail Delta:", err);
+      return [];
+    }
+  }, []);
+
+  // Fungsi untuk memproses data True Retail Long Short
+  const processTrueRetailData = useCallback((rawData) => {
+    if (!rawData.data || !Array.isArray(rawData.data) || rawData.data.length === 0) {
+      console.log("Tidak ada data True Retail Long Short yang valid untuk diproses");
+      return [];
+    }
+
+    try {
+      console.log("Raw True Retail data sample:", rawData.data[0]);
+      
+      // Memastikan data dalam format yang benar
+      const validatedData = rawData.data.filter(item => 
+        item && typeof item === 'object' && 
+        'openDate' in item && 'longPct' in item && 'shortPct' in item
+      );
+      
+      if (validatedData.length === 0) {
+        console.error("Tidak ada data True Retail Long Short valid setelah validasi");
+        return [];
+      }
+      
+      // Memperbaiki format openDate jika diperlukan
+      const processedData = validatedData.map(item => {
+        // Salin data item
+        const newItem = { ...item };
+        
+        // Periksa format timestamp (dalam detik atau milidetik)
+        const openDateStr = String(newItem.openDate);
+        if (openDateStr.length <= 10) {
+          console.log(`Mengkonversi format openDate dari detik ke milidetik: ${newItem.openDate} -> ${newItem.openDate * 1000}`);
+          newItem.openDate = newItem.openDate * 1000;
+        }
+        
+        return newItem;
+      });
+      
+      console.log("Validated True Retail data sample setelah konversi:", processedData[0]);
+      
+      // Urutkan data
+      return [...processedData].sort((a, b) => a.openDate - b.openDate);
+    } catch (err) {
+      console.error("Error memproses data True Retail Long Short:", err);
+      return [];
+    }
+  }, []);
+
+  // Fungsi untuk memproses data Top Trader Long Short
+  const processTopTraderData = useCallback((rawData) => {
+    if (!rawData.data || !Array.isArray(rawData.data) || rawData.data.length === 0) {
+      console.log("Tidak ada data Top Trader Long Short yang valid untuk diproses");
+      return [];
+    }
+
+    try {
+      console.log("Raw Top Trader data sample:", rawData.data[0]);
+      
+      // Memastikan data dalam format yang benar
+      const validatedData = rawData.data.filter(item => 
+        item && typeof item === 'object' && 
+        'openDate' in item && 'longPct' in item && 'shortPct' in item
+      );
+      
+      if (validatedData.length === 0) {
+        console.error("Tidak ada data Top Trader Long Short valid setelah validasi");
+        return [];
+      }
+      
+      // Memperbaiki format openDate jika diperlukan
+      const processedData = validatedData.map(item => {
+        // Salin data item
+        const newItem = { ...item };
+        
+        // Periksa format timestamp (dalam detik atau milidetik)
+        const openDateStr = String(newItem.openDate);
+        if (openDateStr.length <= 10) {
+          console.log(`Mengkonversi format openDate dari detik ke milidetik: ${newItem.openDate} -> ${newItem.openDate * 1000}`);
+          newItem.openDate = newItem.openDate * 1000;
+        }
+        
+        return newItem;
+      });
+      
+      console.log("Validated Top Trader data sample setelah konversi:", processedData[0]);
+      
+      // Urutkan data
+      return [...processedData].sort((a, b) => a.openDate - b.openDate);
+    } catch (err) {
+      console.error("Error memproses data Top Trader Long Short:", err);
+      return [];
+    }
+  }, []);
+
+  // Fungsi untuk mengambil data dari API
+  useEffect(() => {
+    if (tokenLoading) {
+      console.log("Menunggu token...");
+      return;
+    }
+    
+    if (tokenError) {
+      console.error("Token error:", tokenError);
+      setError(`Error autentikasi: ${tokenError}`);
+      setLoading(false);
+      return;
+    }
+
+    const fetchAllData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        setWhaleRetailData([]);
+        setTrueRetailData([]);
+        setTopTraderData([]);
+        
+        // Parameter dasar yang sama untuk semua API
+        const startTime = Math.floor(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).getTime() / 1000);
+        const endTime = Math.floor(new Date().getTime() / 1000);
+        const commonParams = {
+          coin: coin,
+          exchange: "binance", // Menggunakan binance sebagai default
+          timeframe: timeframe,
+          startTime: startTime,
+          endTime: endTime,
+        };
+        
+        console.log(`Memuat data untuk coin: ${coin} dengan timeframe: ${timeframe}`);
+        
+        // Buat semua permintaan API secara paralel
+        const [whaleRetailResponse, trueRetailResponse, topTraderResponse] = await Promise.all([
+          getWhaleRetailDelta(commonParams),
+          getTrueRetailLongShort(commonParams),
+          getTopTraderLongShort(commonParams)
+        ]);
+        
+        console.log("Whale Retail Delta API Response:", whaleRetailResponse);
+        console.log("True Retail Long Short API Response:", trueRetailResponse);
+        console.log("Top Trader Long Short API Response:", topTraderResponse);
+        
+        // Memeriksa error untuk setiap response
+        if (whaleRetailResponse.error || trueRetailResponse.error || topTraderResponse.error) {
+          // Jika ada error 401/403, coba refresh token
+          if ([whaleRetailResponse.status, trueRetailResponse.status, topTraderResponse.status].includes(401) || 
+              [whaleRetailResponse.status, trueRetailResponse.status, topTraderResponse.status].includes(403)) {
+            console.log('Token tidak valid, mencoba refresh token...');
+            await refreshToken();
+            setError("Sesi autentikasi diperbarui. Mohon tunggu...");
+          } else {
+            // Tampilkan error yang paling relevan
+            const errorMsg = whaleRetailResponse.error || trueRetailResponse.error || topTraderResponse.error;
+            setError(`Error: ${errorMsg}`);
+          }
+          setLoading(false);
+          return;
+        }
+        
+        // Proses data response
+        const processedWhaleRetailData = processWhaleRetailData(whaleRetailResponse.data);
+        const processedTrueRetailData = processTrueRetailData(trueRetailResponse.data);
+        const processedTopTraderData = processTopTraderData(topTraderResponse.data);
+        
+        // Update state dengan data yang berhasil diproses
+        if (processedWhaleRetailData.length > 0) {
+          console.log(`Berhasil memproses ${processedWhaleRetailData.length} data Whale Retail Delta`);
+          setWhaleRetailData(processedWhaleRetailData);
+        }
+        
+        if (processedTrueRetailData.length > 0) {
+          console.log(`Berhasil memproses ${processedTrueRetailData.length} data True Retail Long Short`);
+          setTrueRetailData(processedTrueRetailData);
+        }
+        
+        if (processedTopTraderData.length > 0) {
+          console.log(`Berhasil memproses ${processedTopTraderData.length} data Top Trader Long Short`);
+          setTopTraderData(processedTopTraderData);
+        }
+        
+        // Hanya tampilkan error jika tidak ada data sama sekali
+        if (processedWhaleRetailData.length === 0 && processedTrueRetailData.length === 0 && processedTopTraderData.length === 0) {
+          setError("Tidak ada data yang valid untuk ditampilkan");
+        } else {
+          setError(null);
+        }
+        
+        setLoading(false);
+      } catch (err) {
+        console.error("Error saat fetch data:", err);
+        setError(`Error: ${err.message || "Terjadi kesalahan saat mengambil data"}`);
+        setLoading(false);
+      }
+    };
+    
+    if (token) {
+      fetchAllData();
+    } else {
+      setError("Token tidak tersedia. Silakan refresh halaman.");
+      setLoading(false);
+    }
+  }, [coin, timeframe, token, tokenLoading, tokenError, refreshToken, processWhaleRetailData, processTrueRetailData, processTopTraderData]);
 
   if (typeof window === "undefined") {
     return (
       <div className="w-full h-[500px] bg-[#1E2026] rounded-lg p-4 flex items-center justify-center text-white">
         Loading chart...
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="w-full h-[400px] bg-[#1E2026] rounded-lg p-4 border border-[#2B3139] flex items-center justify-center text-white">
+        Memuat data...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="w-full h-[400px] bg-[#1E2026] rounded-lg p-4 border border-[#2B3139] flex items-center justify-center text-white">
+        Error: {error}
       </div>
     );
   }
@@ -53,20 +298,18 @@ const PlotlyChart2 = () => {
         data={[
           // Whale vs Retail Delta (sumbu Y kiri)
           {
-            x: data.time,
-            y: data.whaleRetailDelta,
+            x: whaleRetailData.map(item => new Date(item.openDate)),
+            y: whaleRetailData.map(item => item.whaleRetailDelta),
             type: "scatter",
             mode: "lines",
             name: "Whale vs Retail Delta",
             line: { color: "#F0B90B", width: 2 },
             yaxis: "y",
-            fill: "tozeroy",
-            fillcolor: "rgba(240, 185, 11, 0.1)",
           },
           // True Retail Long Percentage (sumbu Y kanan)
           {
-            x: data.time,
-            y: data.trueRetailLongPct,
+            x: trueRetailData.map(item => new Date(item.openDate)),
+            y: trueRetailData.map(item => item.longPct),
             type: "scatter",
             mode: "lines",
             name: "True Retail Long %",
@@ -75,8 +318,8 @@ const PlotlyChart2 = () => {
           },
           // True Retail Short Percentage (sumbu Y kanan)
           {
-            x: data.time,
-            y: data.trueRetailShortPct,
+            x: trueRetailData.map(item => new Date(item.openDate)),
+            y: trueRetailData.map(item => item.shortPct),
             type: "scatter",
             mode: "lines",
             name: "True Retail Short %",
@@ -85,8 +328,8 @@ const PlotlyChart2 = () => {
           },
           // Top Trader Long Percentage (sumbu Y kanan)
           {
-            x: data.time,
-            y: data.topTraderLongPct,
+            x: topTraderData.map(item => new Date(item.openDate)),
+            y: topTraderData.map(item => item.longPct),
             type: "scatter",
             mode: "lines",
             name: "Top Trader Long %",
@@ -95,8 +338,8 @@ const PlotlyChart2 = () => {
           },
           // Top Trader Short Percentage (sumbu Y kanan)
           {
-            x: data.time,
-            y: data.topTraderShortPct,
+            x: topTraderData.map(item => new Date(item.openDate)),
+            y: topTraderData.map(item => item.shortPct),
             type: "scatter",
             mode: "lines",
             name: "Top Trader Short %",
@@ -108,13 +351,14 @@ const PlotlyChart2 = () => {
           autosize: true,
           margin: { l: 50, r: 50, t: 30, b: 50 },
           xaxis: {
-            title: { text: "Time", font: { color: "#848E9C" } },
-
-            tickformat: "%H:%M",
+            // title: { text: "Time", font: { color: "#848E9C" } },
+            tickformat: "%d-%b", // Format tanggal yang lebih cocok untuk timeframe 1d
             showgrid: true,
             gridcolor: "rgba(43, 49, 57, 0.8)",
             tickfont: { color: "#848E9C" },
             linecolor: "#2B3139",
+            rangeslider: { visible: false }, // Menghilangkan rangeslider
+            tickangle: -30, // Memutar label waktu
           },
           yaxis: {
             title: {
@@ -157,22 +401,22 @@ const PlotlyChart2 = () => {
           plot_bgcolor: "#1E2026",
           paper_bgcolor: "#1E2026",
           hovermode: "x unified",
-          annotations: [
-            {
-              text: "Binance Data",
-              font: {
-                size: 10,
-                color: "#848E9C",
-              },
-              showarrow: false,
-              x: 1,
-              y: 1.05,
-              xref: "paper",
-              yref: "paper",
-              xanchor: "right",
-              yanchor: "bottom",
-            },
-          ],
+          // annotations: [
+          //   {
+          //     text: `BTC/USDT - 1d - Binance`,
+          //     font: {
+          //       size: 10,
+          //       color: "#848E9C",
+          //     },
+          //     showarrow: false,
+          //     x: 1,
+          //     y: 1.05,
+          //     xref: "paper",
+          //     yref: "paper",
+          //     xanchor: "right",
+          //     yanchor: "bottom",
+          //   },
+          // ],
         }}
         config={{
           responsive: true,

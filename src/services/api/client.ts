@@ -58,7 +58,7 @@ export const get = <T>(endpoint: string, params?: Record<string, unknown>, optio
   return apiRequest<T>(endpoint, { 
     ...options, 
     method: 'GET',
-    params 
+    params: params && Object.keys(params).length > 0 ? params : undefined 
   });
 };
 

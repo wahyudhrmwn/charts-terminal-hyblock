@@ -2,11 +2,20 @@
 
 import React, { useState } from "react";
 
-const DropdownButton = () => {
-  const [selectedCoin, setSelectedCoin] = useState("BTC");
+interface DropdownButtonProps {
+  onCoinChange: (coin: string) => void;
+  initialCoin?: string;
+}
+
+const DropdownButton: React.FC<DropdownButtonProps> = ({ 
+  onCoinChange, 
+  initialCoin = "BTC" 
+}) => {
+  const [selectedCoin, setSelectedCoin] = useState(initialCoin);
 
   const handleCoinSelect = (coin: string) => {
     setSelectedCoin(coin);
+    onCoinChange(coin);
   };
 
   return (
