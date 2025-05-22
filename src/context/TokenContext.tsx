@@ -1,7 +1,11 @@
-'use client';
+"use client";
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { getValidToken, isTokenValid, getStoredToken } from '@/services/api/utils/tokenStorage';
+import React, { createContext, useContext, useEffect, useState } from "react";
+import {
+  getValidToken,
+  isTokenValid,
+  getStoredToken,
+} from "@/services/api/utils/tokenStorage";
 
 interface TokenContextProps {
   token: string | null;
@@ -14,12 +18,14 @@ const TokenContext = createContext<TokenContextProps>({
   token: null,
   isLoading: true,
   error: null,
-  refreshToken: async () => {}
+  refreshToken: async () => {},
 });
 
 export const useToken = () => useContext(TokenContext);
 
-export const TokenProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const TokenProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -29,25 +35,26 @@ export const TokenProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setError(null);
     try {
       // API key dan client secret yang benar
-      const clientId = 'vun2VlZziE3xE8DCX37CWJadjV7XI3A7xVAXRmb7';
-      const clientSecret = 'a7cc8c6f-d5f2-4ac1-8eba-7a49f8ed7cbf';
-      
-      console.log('Mengambil token baru dengan credentials:', { clientId });
-      
+      const clientId = "kd3i0e3uums05cdf50pjjga4s";
+      const clientSecret =
+        "1hh2r09d2a9qbsijq16af452l2ge2mlaefqks54m013hmk30er0e";
+
+      console.log("Mengambil token baru dengan credentials:", { clientId });
+
       const newToken = await getValidToken({
         client_id: clientId,
-        client_secret: clientSecret
+        client_secret: clientSecret,
       });
-      
+
       if (newToken) {
         setToken(newToken);
-        console.log('Token berhasil diperbarui');
+        console.log("Token berhasil diperbarui");
       } else {
-        throw new Error('Gagal mendapatkan token');
+        throw new Error("Gagal mendapatkan token");
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Gagal mendapatkan token');
-      console.error('Error mendapatkan token:', err);
+      setError(err instanceof Error ? err.message : "Gagal mendapatkan token");
+      console.error("Error mendapatkan token:", err);
     } finally {
       setIsLoading(false);
     }
@@ -61,7 +68,7 @@ export const TokenProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const storedToken = getStoredToken();
       setToken(storedToken);
       setIsLoading(false);
-      console.log('Menggunakan token yang sudah ada di localStorage');
+      console.log("Menggunakan token yang sudah ada di localStorage");
     } else {
       // Jika tidak ada token atau sudah expired, minta token baru
       fetchToken();
@@ -74,10 +81,10 @@ export const TokenProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         token,
         isLoading,
         error,
-        refreshToken: fetchToken
+        refreshToken: fetchToken,
       }}
     >
       {children}
     </TokenContext.Provider>
   );
-}; 
+};
